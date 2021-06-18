@@ -9,6 +9,7 @@ import {
 import bcrypt from 'bcrypt';
 
 import { User } from '../../entity/User';
+import { RegisterInput } from './register/RegisterInput';
 
 @Resolver(() => User)
 export class Register {
@@ -24,10 +25,7 @@ export class Register {
 
   @Mutation(() => User)
   async register(
-    @Arg('firstName') firstName: string,
-    @Arg('lastName') lastName: string,
-    @Arg('email') email: string,
-    @Arg('password') password: string
+    @Arg('data') { email, firstName, lastName, password }: RegisterInput
   ): Promise<User> {
     const salt = await bcrypt.genSalt(10);
     const hashedPass = await bcrypt.hash(password, salt);
