@@ -12,7 +12,7 @@ import { User } from '../../entity/User';
 import { RegisterInput } from './register/RegisterInput';
 
 @Resolver(() => User)
-export class Register {
+export class RegisterResolver {
   @Query(() => String)
   async hello() {
     return 'Hello World!';

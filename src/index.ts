@@ -7,12 +7,20 @@ import session from 'express-session';
 import Redis from 'ioredis';
 import connectRedis from 'connect-redis';
 
-import { redisPass } from '../config';
-import { Register } from './modules/user/Register';
+import { redisPass, sessionSecret } from '../config';
+import { RegisterResolver } from './modules/user/Register';
+import { LoginResolver } from './modules/user/Login';
 
 const main = async () => {
-  const schema = await buildSchema({ resolvers: [Register] });
-  const apolloServer = new ApolloServer({ schema });
+  const schema = await buildSchema({
+    resolvers: [RegisterResolver, LoginResolver],
+  });
+  const apolloServer = new ApolloServer({
+    schema,
+    context: ({ req }) => ({
+      req: req,
+    }),
+  });
   await apolloServer.start();
 
   await createConnection();
@@ -25,7 +33,8 @@ const main = async () => {
   app.use(
     session({
       store: new RedisStore({ client: redis }),
-      secret: 'some random secret ikdfgjkfdgkfdgijkerijoeirjoeoirj',
+      secret: sessionSecret,
+      name: 'qid',
       resave: false,
       saveUninitialized: false,
       cookie: {
