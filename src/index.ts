@@ -10,10 +10,14 @@ import connectRedis from 'connect-redis';
 import { redisPass, sessionSecret } from '../config';
 import { RegisterResolver } from './modules/user/Register';
 import { LoginResolver } from './modules/user/Login';
+import { authChecker } from './utils/authChecker';
+// import { IsAuth } from './middlewares/IsAuth';
 
 const main = async () => {
   const schema = await buildSchema({
     resolvers: [RegisterResolver, LoginResolver],
+    authChecker: authChecker,
+    // globalMiddlewares: [IsAuth],
   });
   const apolloServer = new ApolloServer({
     schema,
