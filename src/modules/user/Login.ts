@@ -9,8 +9,8 @@ import {
 import bcrypt from 'bcrypt';
 
 import { User } from '../../entity/User';
-import { MyContext } from 'src/types/MyContext';
-import { IsAuth } from '../../middlewares/IsAuth';
+import { MyContext } from 'src/modules/types/MyContext';
+import { IsAuth } from '../middlewares/IsAuth';
 
 @Resolver(() => User)
 export class LoginResolver {

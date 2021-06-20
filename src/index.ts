@@ -11,9 +11,8 @@ import { redisPass, sessionSecret } from '../config';
 import { RegisterResolver } from './modules/user/Register';
 import { LoginResolver } from './modules/user/Login';
 import { ConfirmTokenResolver } from './modules/user/ConfirmToken';
-import { ResetPasswordResolver } from './modules/user/ResetPassword';
+import { ChangePasswordResolver } from './modules/user/ChangePassword';
 import { authChecker } from './modules/utils/authChecker';
-// import { IsAuth } from './middlewares/IsAuth';
 
 const main = async () => {
   const RedisStore = connectRedis(session);
@@ -25,10 +24,9 @@ const main = async () => {
       RegisterResolver,
       LoginResolver,
       ConfirmTokenResolver,
-      ResetPasswordResolver,
+      ChangePasswordResolver,
     ],
     authChecker: authChecker,
-    // globalMiddlewares: [IsAuth],
   });
   const apolloServer = new ApolloServer({
     schema,

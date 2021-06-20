@@ -12,7 +12,7 @@ import { v4 } from 'uuid';
 
 import { User } from '../../entity/User';
 import { RegisterInput } from './register/RegisterInput';
-import { MyContext } from 'src/types/MyContext';
+import { MyContext } from 'src/modules/types/MyContext';
 import { sendConfirmationMail } from '../utils/sendConfirmationMail';
 
 @Resolver(() => User)
@@ -27,11 +27,11 @@ export class RegisterResolver {
     return `${parent.firstName} ${parent.lastName}`;
   }
 
-  @Mutation(() => User)
+  @Mutation(() => Boolean)
   async register(
     @Arg('data') { email, firstName, lastName, password }: RegisterInput,
     @Ctx() { redis }: MyContext
-  ): Promise<User> {
+  ): Promise<Boolean> {
     const salt = await bcrypt.genSalt(10);
     const hashedPass = await bcrypt.hash(password, salt);
 
@@ -48,6 +48,6 @@ export class RegisterResolver {
     // send mail with user email and token to generate unique link to confirm account
     await sendConfirmationMail(user.email, token);
 
-    return user;
+    return true;
   }
 }
