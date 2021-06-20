@@ -33,7 +33,7 @@ export class LoginResolver {
 
     if (!user || !user.confirmed) return null;
 
-    const doMatch = bcrypt.compare(password, user.password);
+    const doMatch = await bcrypt.compare(password, user.password);
 
     if (!doMatch) return null;
 
