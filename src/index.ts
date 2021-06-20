@@ -10,10 +10,14 @@ import connectRedis from 'connect-redis';
 import { redisPass, sessionSecret } from '../config';
 import { RegisterResolver } from './modules/user/Register';
 import { LoginResolver } from './modules/user/Login';
-import { authChecker } from './utils/authChecker';
+import { authChecker } from './modules/utils/authChecker';
 // import { IsAuth } from './middlewares/IsAuth';
 
 const main = async () => {
+  const RedisStore = connectRedis(session);
+  const redis = new Redis({ password: redisPass });
+  const app = express();
+
   const schema = await buildSchema({
     resolvers: [RegisterResolver, LoginResolver],
     authChecker: authChecker,
@@ -23,16 +27,12 @@ const main = async () => {
     schema,
     context: ({ req }) => ({
       req: req,
+      redis: redis,
     }),
   });
   await apolloServer.start();
 
   await createConnection();
-
-  const app = express();
-
-  const RedisStore = connectRedis(session);
-  const redis = new Redis({ password: redisPass });
 
   app.use(
     session({

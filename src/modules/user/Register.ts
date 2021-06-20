@@ -1,5 +1,6 @@
 import {
   Arg,
+  Ctx,
   FieldResolver,
   Mutation,
   Query,
@@ -7,9 +8,12 @@ import {
   Root,
 } from 'type-graphql';
 import bcrypt from 'bcrypt';
+import { v4 } from 'uuid';
 
 import { User } from '../../entity/User';
 import { RegisterInput } from './register/RegisterInput';
+import { MyContext } from 'src/types/MyContext';
+import { sendMail } from '../utils/sendMail';
 
 @Resolver(() => User)
 export class RegisterResolver {
@@ -25,7 +29,8 @@ export class RegisterResolver {
 
   @Mutation(() => User)
   async register(
-    @Arg('data') { email, firstName, lastName, password }: RegisterInput
+    @Arg('data') { email, firstName, lastName, password }: RegisterInput,
+    @Ctx() { redis }: MyContext
   ): Promise<User> {
     const salt = await bcrypt.genSalt(10);
     const hashedPass = await bcrypt.hash(password, salt);
@@ -36,6 +41,12 @@ export class RegisterResolver {
       lastName,
       password: hashedPass,
     }).save();
+
+    // generate unique token and store it to redis as key with userId as value
+    const token = v4();
+    redis.set(token, user.id);
+    // send mail with user email and token to generate unique link to confirm account
+    await sendMail(user.email, token);
 
     return user;
   }
