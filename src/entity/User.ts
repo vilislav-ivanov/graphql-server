@@ -8,7 +8,7 @@ export class User extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Field({ description: 'some description for firstName prop' })
+  @Field()
   @Column()
   firstName: string;
 
@@ -22,4 +22,7 @@ export class User extends BaseEntity {
 
   @Column()
   password: string;
+
+  @Column({ default: false })
+  confirmed: boolean;
 }
