@@ -13,7 +13,7 @@ import { v4 } from 'uuid';
 import { User } from '../../entity/User';
 import { RegisterInput } from './register/RegisterInput';
 import { MyContext } from 'src/types/MyContext';
-import { sendMail } from '../utils/sendMail';
+import { sendConfirmationMail } from '../utils/sendConfirmationMail';
 
 @Resolver(() => User)
 export class RegisterResolver {
@@ -44,9 +44,9 @@ export class RegisterResolver {
 
     // generate unique token and store it to redis as key with userId as value
     const token = v4();
-    redis.set(token, user.id);
+    redis.set(token, user.id, 'EX', 60 * 60 * 24); // 24h expirations time
     // send mail with user email and token to generate unique link to confirm account
-    await sendMail(user.email, token);
+    await sendConfirmationMail(user.email, token);
 
     return user;
   }

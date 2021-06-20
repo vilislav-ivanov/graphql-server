@@ -10,8 +10,9 @@ import connectRedis from 'connect-redis';
 import { redisPass, sessionSecret } from '../config';
 import { RegisterResolver } from './modules/user/Register';
 import { LoginResolver } from './modules/user/Login';
-import { authChecker } from './modules/utils/authChecker';
 import { ConfirmTokenResolver } from './modules/user/ConfirmToken';
+import { ResetPasswordResolver } from './modules/user/ResetPassword';
+import { authChecker } from './modules/utils/authChecker';
 // import { IsAuth } from './middlewares/IsAuth';
 
 const main = async () => {
@@ -20,7 +21,12 @@ const main = async () => {
   const app = express();
 
   const schema = await buildSchema({
-    resolvers: [RegisterResolver, LoginResolver, ConfirmTokenResolver],
+    resolvers: [
+      RegisterResolver,
+      LoginResolver,
+      ConfirmTokenResolver,
+      ResetPasswordResolver,
+    ],
     authChecker: authChecker,
     // globalMiddlewares: [IsAuth],
   });
