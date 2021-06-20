@@ -11,6 +11,7 @@ import { redisPass, sessionSecret } from '../config';
 import { RegisterResolver } from './modules/user/Register';
 import { LoginResolver } from './modules/user/Login';
 import { authChecker } from './modules/utils/authChecker';
+import { ConfirmTokenResolver } from './modules/user/ConfirmToken';
 // import { IsAuth } from './middlewares/IsAuth';
 
 const main = async () => {
@@ -19,7 +20,7 @@ const main = async () => {
   const app = express();
 
   const schema = await buildSchema({
-    resolvers: [RegisterResolver, LoginResolver],
+    resolvers: [RegisterResolver, LoginResolver, ConfirmTokenResolver],
     authChecker: authChecker,
     // globalMiddlewares: [IsAuth],
   });

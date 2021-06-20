@@ -17,13 +17,13 @@ export class LoginResolver {
   // @Authorized()
   @UseMiddleware(IsAuth)
   @Query(() => User)
-  async me(@Ctx() { req }: MyContext): Promise<User | null> {
+  async me(@Ctx() { req }: MyContext): Promise<User> {
     const user = await User.findOne(req.session.userId.toString());
     if (!user) throw new Error('no user found');
     return user;
   }
 
-  @Mutation(() => User)
+  @Mutation(() => User, { nullable: true })
   async login(
     @Arg('email') email: string,
     @Arg('password') password: string,
@@ -31,7 +31,7 @@ export class LoginResolver {
   ): Promise<User | null> {
     const user = await User.findOne({ where: { email } });
 
-    if (!user) return null;
+    if (!user || !user.confirmed) return null;
 
     const doMatch = bcrypt.compare(password, user.password);
 
