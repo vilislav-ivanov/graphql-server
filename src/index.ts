@@ -8,10 +8,6 @@ import Redis from 'ioredis';
 import connectRedis from 'connect-redis';
 
 import { redisPass, sessionSecret } from '../config';
-import { RegisterResolver } from './modules/user/Register';
-import { LoginResolver } from './modules/user/Login';
-import { ConfirmTokenResolver } from './modules/user/ConfirmToken';
-import { ChangePasswordResolver } from './modules/user/ChangePassword';
 import { authChecker } from './modules/utils/authChecker';
 
 const main = async () => {
@@ -20,18 +16,15 @@ const main = async () => {
   const app = express();
 
   const schema = await buildSchema({
-    resolvers: [
-      RegisterResolver,
-      LoginResolver,
-      ConfirmTokenResolver,
-      ChangePasswordResolver,
-    ],
+    resolvers: [__dirname + '/modules/*/*.{ts,js}'],
     authChecker: authChecker,
   });
+
   const apolloServer = new ApolloServer({
     schema,
-    context: ({ req }) => ({
+    context: ({ req, res }) => ({
       req: req,
+      res: res,
       redis: redis,
     }),
   });
