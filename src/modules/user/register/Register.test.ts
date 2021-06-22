@@ -2,6 +2,9 @@ import { Connection } from 'typeorm';
 import { testConnection } from '../../../test-utils/testConnection';
 import { gCall } from '../../../test-utils/gCall';
 
+import { name, internet } from 'faker';
+import { User } from '../../../entity/User';
+
 let conn: Connection;
 
 beforeAll(async () => {
@@ -25,20 +28,37 @@ mutation Register($data: RegisterInput!) {
   }
 }`;
 
-describe('Login', () => {
+describe('Register', () => {
   it('create user', async () => {
-    console.log(
-      await gCall({
-        source: registerMutation,
-        variableValues: {
-          data: {
-            firstName: 'Bob',
-            lastName: 'John',
-            password: '1234567',
-            email: 'bob@bob.com',
-          },
+    const user = {
+      firstName: name.firstName(),
+      lastName: name.lastName(),
+      email: internet.email(),
+      password: internet.password(),
+    };
+
+    const response = await gCall({
+      source: registerMutation,
+      variableValues: {
+        data: user,
+      },
+    });
+
+    expect(response).toMatchObject({
+      data: {
+        register: {
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
         },
-      })
-    );
+      },
+    });
+
+    const dbUser = await User.findOne({ where: { email: user.email } });
+    expect(dbUser).toBeDefined();
+
+    expect(dbUser!.confirmed).toBeFalsy();
+
+    expect(dbUser!.firstName).toBe(user.firstName);
   });
 });
