@@ -18,10 +18,10 @@ import { Service } from 'typedi';
 export class LoginResolver {
   // @Authorized()
   @UseMiddleware(IsAuth)
-  @Query(() => User)
-  async me(@Ctx() { req }: MyContext): Promise<User> {
+  @Query(() => User, { nullable: true })
+  async me(@Ctx() { req }: MyContext): Promise<User | null> {
     const user = await User.findOne(req.session.userId.toString());
-    if (!user) throw new Error('no user found');
+    if (!user) return null;
     return user;
   }
 
