@@ -31,11 +31,10 @@ export class RegisterResolver {
     return `${parent.firstName} ${parent.lastName}`;
   }
 
-  @Mutation(() => Boolean)
+  @Mutation(() => User)
   async register(
     @Arg('data') { email, firstName, lastName, password }: RegisterInput
-  ): // @Ctx() { redis }: MyContext
-  Promise<Boolean> {
+  ): Promise<User> {
     const salt = await bcrypt.genSalt(10);
     const hashedPass = await bcrypt.hash(password, salt);
 
@@ -52,6 +51,6 @@ export class RegisterResolver {
     // send mail with user email and token to generate unique link to confirm account
     await sendConfirmationMail(user.email, token);
 
-    return true;
+    return user;
   }
 }

@@ -1,28 +1,21 @@
 import 'reflect-metadata';
 import express from 'express';
 import { ApolloServer } from 'apollo-server-express';
-import { buildSchema } from 'type-graphql';
 import { createConnection } from 'typeorm';
 import session from 'express-session';
 import Redis from 'ioredis';
 import connectRedis from 'connect-redis';
 
 import { redisPass, sessionSecret } from '../config';
-import { authChecker } from './modules/utils/authChecker';
-import { Container } from 'typedi';
+import { makeSchema } from './utils/makeSchema';
 
 const main = async () => {
   const RedisStore = connectRedis(session);
   const redis = new Redis({ password: redisPass });
-  Container.set('redis', redis);
 
   const app = express();
 
-  const schema = await buildSchema({
-    resolvers: [__dirname + '/modules/*/*.{ts,js}'],
-    authChecker: authChecker,
-    container: Container,
-  });
+  const schema = await makeSchema();
 
   const apolloServer = new ApolloServer({
     schema,
