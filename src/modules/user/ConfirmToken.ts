@@ -2,15 +2,21 @@ import { Arg, Ctx, Mutation, Resolver } from 'type-graphql';
 
 import { User } from '../../entity/User';
 import { MyContext } from 'src/modules/types/MyContext';
+import { Redis } from 'ioredis';
+import { Inject, Service } from 'typedi';
 
+@Service()
 @Resolver(() => User)
 export class ConfirmTokenResolver {
+  @Inject('redis')
+  private readonly redis: Redis;
+
   @Mutation(() => User, { nullable: true })
   async confirmAccount(
     @Arg('confirmToken') confirmToken: string,
-    @Ctx() { redis, req }: MyContext
+    @Ctx() { req }: MyContext
   ): Promise<User | null> {
-    const userId = await redis.get(confirmToken);
+    const userId = await this.redis.get(confirmToken);
 
     if (!userId) return null;
 
@@ -21,7 +27,7 @@ export class ConfirmTokenResolver {
 
     req.session.userId = user.id;
 
-    await redis.del(confirmToken);
+    await this.redis.del(confirmToken);
 
     await user.save();
     return user;

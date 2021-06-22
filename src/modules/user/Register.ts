@@ -1,6 +1,5 @@
 import {
   Arg,
-  Ctx,
   FieldResolver,
   Mutation,
   Query,
@@ -12,13 +11,18 @@ import { v4 } from 'uuid';
 
 import { User } from '../../entity/User';
 import { RegisterInput } from './register/RegisterInput';
-import { MyContext } from 'src/modules/types/MyContext';
 import { sendConfirmationMail } from '../utils/sendConfirmationMail';
+import { Inject, Service } from 'typedi';
+import { Redis } from 'ioredis';
 
+@Service()
 @Resolver(() => User)
 export class RegisterResolver {
+  @Inject('redis')
+  private readonly redis: Redis;
   @Query(() => String)
   async hello() {
+    console.log(this.redis);
     return 'Hello World!';
   }
 
@@ -29,9 +33,9 @@ export class RegisterResolver {
 
   @Mutation(() => Boolean)
   async register(
-    @Arg('data') { email, firstName, lastName, password }: RegisterInput,
-    @Ctx() { redis }: MyContext
-  ): Promise<Boolean> {
+    @Arg('data') { email, firstName, lastName, password }: RegisterInput
+  ): // @Ctx() { redis }: MyContext
+  Promise<Boolean> {
     const salt = await bcrypt.genSalt(10);
     const hashedPass = await bcrypt.hash(password, salt);
 
@@ -44,7 +48,7 @@ export class RegisterResolver {
 
     // generate unique token and store it to redis as key with userId as value
     const token = v4();
-    redis.set(token, user.id, 'EX', 60 * 60 * 24); // 24h expirations time
+    this.redis.set(token, user.id, 'EX', 60 * 60 * 24); // 24h expirations time
     // send mail with user email and token to generate unique link to confirm account
     await sendConfirmationMail(user.email, token);
 

@@ -11,7 +11,9 @@ import bcrypt from 'bcrypt';
 import { User } from '../../entity/User';
 import { MyContext } from 'src/modules/types/MyContext';
 import { IsAuth } from '../middlewares/IsAuth';
+import { Service } from 'typedi';
 
+@Service()
 @Resolver(() => User)
 export class LoginResolver {
   // @Authorized()

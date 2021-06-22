@@ -6,20 +6,23 @@ import bcrypt from 'bcrypt';
 import { User } from '../../entity/User';
 import { sendResetPasswordMail } from '../utils/sendResetPasswordMail';
 import { ChangePasswordInput } from './changePassword/ChangePasswordInput';
+import { Redis } from 'ioredis';
+import { Inject, Service } from 'typedi';
 
+@Service()
 @Resolver(() => User)
 export class ChangePasswordResolver {
+  @Inject('redis')
+  private readonly redis: Redis;
+
   @Mutation(() => Boolean)
-  async requestResetPassword(
-    @Arg('email') email: string,
-    @Ctx() { redis }: MyContext
-  ): Promise<Boolean> {
+  async requestResetPassword(@Arg('email') email: string): Promise<Boolean> {
     const user = await User.findOne({ where: { email } });
     if (!user) return false;
 
     const token = v4();
 
-    await redis.set(token, user.id, 'EX', 60 * 60); // 1h for changing a password
+    await this.redis.set(token, user.id, 'EX', 60 * 60); // 1h for changing a password
 
     await sendResetPasswordMail(email, token);
     return true;
@@ -28,10 +31,10 @@ export class ChangePasswordResolver {
   @Mutation(() => User, { nullable: true })
   async changePassword(
     @Arg('data') { changePasswordToken, password }: ChangePasswordInput,
-    @Ctx() { redis, req }: MyContext
+    @Ctx() { req }: MyContext
   ): Promise<User | null> {
-    const userId = await redis.get(changePasswordToken);
-    await redis.del(changePasswordToken);
+    const userId = await this.redis.get(changePasswordToken);
+    await this.redis.del(changePasswordToken);
 
     if (!userId) return null;
 

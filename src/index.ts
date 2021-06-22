@@ -9,24 +9,29 @@ import connectRedis from 'connect-redis';
 
 import { redisPass, sessionSecret } from '../config';
 import { authChecker } from './modules/utils/authChecker';
+import { Container } from 'typedi';
 
 const main = async () => {
   const RedisStore = connectRedis(session);
   const redis = new Redis({ password: redisPass });
+  Container.set('redis', redis);
+
   const app = express();
 
   const schema = await buildSchema({
     resolvers: [__dirname + '/modules/*/*.{ts,js}'],
     authChecker: authChecker,
+    container: Container,
   });
 
   const apolloServer = new ApolloServer({
     schema,
-    context: ({ req, res }) => ({
-      req: req,
-      res: res,
-      redis: redis,
-    }),
+    context: ({ req, res }) => {
+      return {
+        req: req,
+        res: res,
+      };
+    },
   });
   await apolloServer.start();
 
